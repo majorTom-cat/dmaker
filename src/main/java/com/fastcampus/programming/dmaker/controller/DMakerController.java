@@ -25,7 +25,7 @@ public class DMakerController {
     }
 
     //@PostMapping("/create-developer")
-    @RequestMapping(value="/", method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(value="/create-developer", method = {RequestMethod.GET, RequestMethod.POST})
     public List<String> createDeveloper() {
         // POST /developers HTTP/1.1
         System.out.println("post called");
