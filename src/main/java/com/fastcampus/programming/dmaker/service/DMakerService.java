@@ -17,6 +17,7 @@ public class DMakerService {
     @Transactional
     public void createDeveloper() {
         Developer developer = Developer.builder()
+                .memberId(null)
                 .developerLevel(DeveloperLevel.JUNIOR)
                 .developerSkillType(DeveloperSkillType.FRONT_END)
                 .experienceYears(2)
