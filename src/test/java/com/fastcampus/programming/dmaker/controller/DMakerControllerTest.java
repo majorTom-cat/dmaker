@@ -1,0 +1,63 @@
+package com.fastcampus.programming.dmaker.controller;
+
+import com.fastcampus.programming.dmaker.dto.DeveloperDto;
+import com.fastcampus.programming.dmaker.service.DMakerService;
+import com.fastcampus.programming.dmaker.type.DeveloperLevel;
+import com.fastcampus.programming.dmaker.type.DeveloperSkillType;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.awt.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
+@WebMvcTest(DMakerController.class)
+class DMakerControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private DMakerService dMakerService;
+
+    protected PageAttributes.MediaType contentType =
+            new MediaType(MediaType.APPLICATION_JSON.getType(),
+                    MediaType.APPLICATION_JSON.getSubtype(),
+                    StandardCharsets.UTF_8);
+
+    @Test
+    void getAllDevelopers() throws Exception {
+
+        DeveloperDto juniorDeveloperDto = DeveloperDto.builder()
+                .developerSkillType(DeveloperSkillType.BACK_END)
+                .developerLevel(DeveloperLevel.JUNIOR)
+                .memberId("memberId1")
+                .build();
+        DeveloperDto seniorDeveloperDto = DeveloperDto.builder()
+                .developerSkillType(DeveloperSkillType.BACK_END)
+                .developerLevel(DeveloperLevel.SENIOR)
+                .memberId("memberId2")
+                .build();
+
+        given(dMakerService.getAllEmployedDevelopers())
+                .willReturn(Arrays.asList(juniorDeveloperDto, seniorDeveloperDto));
+
+        // json 타입인지, UTF-8인지 확인
+        mockMvc.perform(get("/developers").contentType(contentType))
+                .andExpect(status().isOk())
+                .andExpect(
+                        jsonPath("$.[0].developerSkillType",
+                                is(DeveloperSkillType.BACK_END.name()))
+                );
+    }
+
+}
