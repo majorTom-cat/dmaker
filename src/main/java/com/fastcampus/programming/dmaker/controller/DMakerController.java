@@ -29,7 +29,7 @@ public class DMakerController {
 
     @GetMapping("/developer/{memberId}")
     public DeveloperDetailDto getDeveloperDetail(
-            @PathVariable String memberId
+            @PathVariable final String memberId
     ) {
         // GET /developer/{memberId} HTTP/1.1
         log.info("GET /developer/{memberId} HTTP/1.1");
@@ -40,7 +40,7 @@ public class DMakerController {
     @PostMapping("/create-developer")
     //@RequestMapping(value="/create-developer", method = {RequestMethod.GET, RequestMethod.POST})
     public CreateDeveloper.Response createDeveloper(
-            @Valid @RequestBody CreateDeveloper.Request request
+            @Valid @RequestBody final CreateDeveloper.Request request
     ) {
         // POST /developers HTTP/1.1
         log.info("request : {}", request);
@@ -51,7 +51,7 @@ public class DMakerController {
     // 특정 Developer만 수정
     @PutMapping("/developer/{memberId}")
     public DeveloperDetailDto editDeveloper(
-            @PathVariable String memberId,
+            @PathVariable final String memberId,
             @Valid @RequestBody EditDeveloper.Request request
     ) {
         // GET /developer/{memberId} HTTP/1.1
@@ -62,7 +62,7 @@ public class DMakerController {
 
     @DeleteMapping("/developer/{memberId}")
     public DeveloperDetailDto deleteDeveloper(
-            @PathVariable String memberId
+            @PathVariable final String memberId
     ) {
         return dMakerService.deleteDeveloper(memberId);
     }

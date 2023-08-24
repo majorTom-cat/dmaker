@@ -8,6 +8,8 @@ import com.fastcampus.programming.dmaker.exception.DMakerErrorCode;
 import com.fastcampus.programming.dmaker.exception.DMakerException;
 import com.fastcampus.programming.dmaker.repository.DeveloperRepository;
 import com.fastcampus.programming.dmaker.repository.RetiredDeveloperRepository;
+import com.fastcampus.programming.dmaker.type.DeveloperLevel;
+import com.fastcampus.programming.dmaker.type.DeveloperSkillType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -17,10 +19,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static com.fastcampus.programming.dmaker.type.DeveloperLevel.SENIOR;
+import static com.fastcampus.programming.dmaker.constant.DMakerConstant.MAX_JUNIOR_EXPERIENCE_YEARS;
+import static com.fastcampus.programming.dmaker.constant.DMakerConstant.MIN_SENIOR_EXPERIENCE_YEARS;
+import static com.fastcampus.programming.dmaker.type.DeveloperLevel.*;
 import static com.fastcampus.programming.dmaker.type.DeveloperSkillType.FRONT_END;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
@@ -38,37 +43,42 @@ class DMakerServiceTest {
     @InjectMocks
     private DMakerService dMakerService;
 
-    private final Developer defaultDeveloper =  Developer.builder()
-                                .developerLevel(SENIOR)
-                                .developerSkillType(FRONT_END)
-                                .experienceYears(12)
-                                .statusCode(StatusCode.EMPLOYED)
-                                .name("name")
-                                .age(12)
-                                .build();
+    private final Developer defaultDeveloper = Developer.builder()
+            .developerLevel(SENIOR)
+            .developerSkillType(FRONT_END)
+            .experienceYears(12)
+            .statusCode(StatusCode.EMPLOYED)
+            .name("name")
+            .age(12)
+            .build();
 
-    private final CreateDeveloper.Request defaultCreateRequest =
-            CreateDeveloper.Request.builder()
-                .developerLevel(SENIOR)
-                .developerSkillType(FRONT_END)
-                .experienceYears(12)
+    private CreateDeveloper.Request getCreateRequest(
+            DeveloperLevel developerLevel,
+            DeveloperSkillType developerSkillType,
+            Integer experienceYears
+    ) {
+        return CreateDeveloper.Request.builder()
+                .developerLevel(developerLevel)
+                .developerSkillType(developerSkillType)
+                .experienceYears(experienceYears)
                 .memberId("memberId")
                 .name("name")
                 .age(32)
                 .build();
+    }
 
     @Test
     public void testSomething() {
         //given
         given(developerRepository.findByMemberId(anyString()))
                 .willReturn(Optional.of(Developer.builder()
-                                .developerLevel(SENIOR)
-                                .developerSkillType(FRONT_END)
-                                .experienceYears(12)
-                                .statusCode(StatusCode.EMPLOYED)
-                                .name("name")
-                                .age(12)
-                                .build()));
+                        .developerLevel(SENIOR)
+                        .developerSkillType(FRONT_END)
+                        .experienceYears(12)
+                        .statusCode(StatusCode.EMPLOYED)
+                        .name("name")
+                        .age(12)
+                        .build()));
 
         //when
         DeveloperDetailDto developerDetail = dMakerService.getDeveloperDetail("memberId");
@@ -86,10 +96,11 @@ class DMakerServiceTest {
         // 중복되는 아이디가 없어야함
         given(developerRepository.findByMemberId(anyString()))
                 .willReturn(Optional.empty());
-        // save한 것을 캡쳐하기 위해
+        given(developerRepository.save(any()))
+                .willReturn(defaultDeveloper);
         /**
-         * `ArgumentCaptor<>`   저장하고자 하는 객체를 잡는 클래스
-         *
+         * save한 것을 캡쳐하기 위함
+         * ArgumentCaptor<> : 저장하고자 하는 객체를 잡는 클래스
          * DB에 저장하게 되는 데이터가 무엇인지 확인하고 싶을때,
          * 외부 API로 데이터를 날릴때 어떤 데이터가 날라가는지 확인하고 싶을때
          * → 메소드의 파라미터를 확인할때 사용
@@ -98,7 +109,10 @@ class DMakerServiceTest {
                 ArgumentCaptor.forClass(Developer.class);
 
         //when
-        CreateDeveloper.Response developer = dMakerService.createDeveloper(defaultCreateRequest);
+        CreateDeveloper.Response developer =
+                dMakerService.createDeveloper(
+                        getCreateRequest(SENIOR, FRONT_END, 12)
+                );
 
         //then
         verify(developerRepository, times(1)) // 특정mock이 몇번 호출되었는지
@@ -107,6 +121,42 @@ class DMakerServiceTest {
         assertEquals(SENIOR, savedDeveloper.getDeveloperLevel());
         assertEquals(FRONT_END, savedDeveloper.getDeveloperSkillType());
         assertEquals(12, savedDeveloper.getExperienceYears());
+    }
+
+    @Test
+    void createDeveloperTest_fail_with_unmatched_level() {
+        //given
+        //when
+        //then
+        DMakerException dMakerException = assertThrows(DMakerException.class,
+                () -> dMakerService.createDeveloper(
+                        getCreateRequest(JUNIOR, FRONT_END,
+                                MAX_JUNIOR_EXPERIENCE_YEARS + 1)
+                )
+        );
+        assertEquals(DMakerErrorCode.LEVEL_EXPERIENCE_YEARS_NOT_MATCHED,
+                dMakerException.getDMakerErrorCode()
+        );
+
+        dMakerException = assertThrows(DMakerException.class,
+                () -> dMakerService.createDeveloper(
+                        getCreateRequest(JUNGNIOR, FRONT_END,
+                                MIN_SENIOR_EXPERIENCE_YEARS + 1)
+                )
+        );
+        assertEquals(DMakerErrorCode.LEVEL_EXPERIENCE_YEARS_NOT_MATCHED,
+                dMakerException.getDMakerErrorCode()
+        );
+
+        dMakerException = assertThrows(DMakerException.class,
+                () -> dMakerService.createDeveloper(
+                        getCreateRequest(SENIOR, FRONT_END,
+                                MIN_SENIOR_EXPERIENCE_YEARS - 1)
+                ) // SENIOR인데 연차가 8년이면 에러가 발생해야 한다.
+        );
+        assertEquals(DMakerErrorCode.LEVEL_EXPERIENCE_YEARS_NOT_MATCHED,
+                dMakerException.getDMakerErrorCode()
+        );
     }
 
     @Test
@@ -123,11 +173,14 @@ class DMakerServiceTest {
          * createDeveloper가 만든 exception이 응답 결과로 떨어짐
          */
         DMakerException dMakerException = assertThrows(DMakerException.class,
-                () -> dMakerService.createDeveloper(defaultCreateRequest)
+                () -> dMakerService.createDeveloper(
+                        getCreateRequest(SENIOR, FRONT_END, 12)
+                )
         );
 
         assertEquals(DMakerErrorCode.DUPLICATED_MEMBER_ID,
                 dMakerException.getDMakerErrorCode());
 
     }
+
 }

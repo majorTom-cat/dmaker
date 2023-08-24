@@ -15,9 +15,9 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import static org.assertj.core.internal.bytebuddy.matcher.ElementMatchers.is;
+import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -67,7 +67,7 @@ class DMakerControllerTest {
                                 is(DeveloperLevel.JUNIOR.name()))
                 ).andExpect(
                         (ResultMatcher) jsonPath("$.[1].developerSkillType",
-                                is(DeveloperSkillType.FRONT_END.name()))
+                                is(DeveloperSkillType.BACK_END.name()))
                 ).andExpect(
                         (ResultMatcher) jsonPath("$.[1].developerLevel",
                                 is(DeveloperLevel.SENIOR.name()))
