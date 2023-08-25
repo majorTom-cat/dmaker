@@ -71,14 +71,17 @@ class DMakerServiceTest {
     public void testSomething() {
         //given
         given(developerRepository.findByMemberId(anyString()))
-                .willReturn(Optional.of(Developer.builder()
+                .willReturn(Optional.of(
+                        Developer.builder()
                         .developerLevel(SENIOR)
                         .developerSkillType(FRONT_END)
                         .experienceYears(12)
                         .statusCode(StatusCode.EMPLOYED)
                         .name("name")
                         .age(12)
-                        .build()));
+                        .build()
+                        )
+                );
 
         //when
         DeveloperDetailDto developerDetail = dMakerService.getDeveloperDetail("memberId");

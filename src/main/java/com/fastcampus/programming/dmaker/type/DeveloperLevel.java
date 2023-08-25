@@ -17,15 +17,13 @@ public enum DeveloperLevel {
 //    NEW("new developer", 0, 0),
 //    JUNIOR("junior developer", 1, MAX_JUNIOR_EXPERIENCE_YEARS),
 //    JUNGNIOR("jungnior developer", MAX_JUNIOR_EXPERIENCE_YEARS + 1, MIN_SENIOR_EXPERIENCE_YEARS - 1),
-//    SENIOR("senior developer", MIN_SENIOR_EXPERIENCE_YEARS, 70)
-//    ;
+//    SENIOR("senior developer", MIN_SENIOR_EXPERIENCE_YEARS, 70);
 
     NEW("new developer", years -> years == 0),
     JUNIOR("junior developer", years -> years <= MAX_JUNIOR_EXPERIENCE_YEARS),
     JUNGNIOR("jungnior developer", years -> years > MAX_JUNIOR_EXPERIENCE_YEARS
         && years < MIN_SENIOR_EXPERIENCE_YEARS),
     SENIOR("senior developer", years -> years >= MIN_SENIOR_EXPERIENCE_YEARS);
-
 
     private final String description;
 //    private final Integer minExperienceYears;
